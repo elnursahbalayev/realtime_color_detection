@@ -26,7 +26,7 @@ The application converts video frames from BGR to HSV color space for more robus
 
 1. **Clone the repository or download the project files:**
    ```bash
-   git clone https://github.com/yourusername/realtime_color_detection.git
+   git clone https://github.com/elnursahbalayev/realtime_color_detection.git
    cd realtime_color_detection
    ```
 
