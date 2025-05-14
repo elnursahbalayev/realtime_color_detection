@@ -2,101 +2,129 @@
 
 ## Description
 
-This project demonstrates real-time color detection and object tracking using a webcam feed. It identifies objects of a specific color (e.g., yellow) in the video stream and draws a bounding box around the largest detected object of that color.
+This project demonstrates real-time color detection and object tracking using a webcam feed. It identifies objects of a specific color (yellow by default) in the video stream and draws a bounding box around the detected object.
 
-The system converts video frames from BGR to HSV color space for more robust color detection. It then applies a mask based on predefined or dynamically calculated color limits and uses OpenCV's contour detection to find and outline the object.
+The application converts video frames from BGR to HSV color space for more robust color detection, applies a mask based on calculated color limits, and uses PIL's bounding box detection to identify and outline the object.
 
 ## Features
 
-* Real-time video processing from a webcam.
-* Color detection in the HSV color space.
-* Dynamic calculation of HSV color range limits based on a BGR input color.
-* Bounding box drawing around the largest detected object of the specified color.
-* Graceful exit by pressing the 'q' key.
+* Real-time video processing from a webcam
+* Color detection in the HSV color space
+* Dynamic calculation of HSV color range limits based on a BGR input color
+* Bounding box drawing around detected objects of the specified color
+* Handles edge cases for colors with hue values near the limits of the HSV range
+* Graceful exit by pressing the 'q' key
 
 ## Requirements
 
 * Python 3.x
-* OpenCV (`cv2`): For video capture, image processing, and drawing.
-* NumPy: For numerical operations, especially array manipulation for color ranges.
+* OpenCV (`opencv-python`): For video capture, image processing, and drawing
+* NumPy: For numerical operations and array manipulation
+* PIL (Pillow): For bounding box detection
 
 ## Installation
 
-1.  **Clone the repository (if applicable) or ensure you have the project files:**
-    ```bash
-    # If this were a git repository:
-    # git clone <repository-url>
-    # cd <repository-directory>
-    ```
+1. **Clone the repository or download the project files:**
+   ```bash
+   git clone https://github.com/yourusername/realtime_color_detection.git
+   cd realtime_color_detection
+   ```
 
-2.  **Install the required Python libraries:**
-    It's highly recommended to use a virtual environment.
-    ```bash
-    python -m venv venv
-    # On Windows:
-    # venv\Scripts\activate
-    # On macOS/Linux:
-    # source venv/bin/activate
+2. **Install the required Python libraries:**
+   It's recommended to use a virtual environment.
+   ```bash
+   python -m venv venv
 
-    pip install opencv-python numpy
-    ```
+   # On Windows:
+   venv\Scripts\activate
+
+   # On macOS/Linux:
+   # source venv/bin/activate
+
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
-1.  Ensure you have a webcam connected and accessible.
-2.  Run the `main.py` script:
-    ```bash
-    python main.py
-    ```
-3.  A window titled 'frame' will appear, showing the webcam feed.
-4.  Objects matching the target color (default is yellow) will have a green bounding box drawn around them.
-5.  Press the 'q' key while the OpenCV window is active to quit the application.
+1. Ensure you have a webcam connected and accessible.
+2. Run the main script:
+   ```bash
+   python main.py
+   ```
+3. A window titled 'frame' will appear showing the webcam feed.
+4. Yellow objects (by default) will be detected and highlighted with a green bounding box.
+5. Press the 'q' key to exit the application.
 
 ## File Structure
 
-* `main.py`: The main script that captures video, processes frames, and displays the output.
-* `util.py`: Contains utility functions, primarily `get_limits()` for calculating HSV color thresholds.
+* `main.py`: The main script that captures video, processes frames, and displays the output
+* `util.py`: Contains the `get_limits()` function for calculating HSV color thresholds
+* `requirements.txt`: Lists the project dependencies with specific versions
 
 ## How it Works
 
-1.  **Video Capture (`main.py`):**
-    * Initializes video capture from the default webcam (`cv2.VideoCapture(0)`).
+1. **Video Capture:**
+   * Initializes video capture from the default webcam (`cv2.VideoCapture(0)`)
+   * Checks if the camera opened successfully and handles errors
 
-2.  **Frame Processing Loop (`main.py`):**
-    * Reads each frame from the webcam.
-    * Converts the frame from BGR to HSV color space (`cv2.cvtColor()`). HSV is often preferred for color detection as it separates color information (Hue) from intensity/brightness (Value) and saturation.
+2. **Frame Processing Loop:**
+   * Reads each frame from the webcam
+   * Converts the frame from BGR to HSV color space for better color detection
 
-3.  **Color Range Calculation (`util.py` -> `get_limits()`):**
-    * The `get_limits()` function takes a BGR color (e.g., `[0, 255, 255]` for yellow) as input.
-    * It converts this single BGR color pixel to its HSV equivalent.
-    * Based on the Hue value, it defines a lower and upper HSV threshold range. This handles the wrap-around nature of the Hue component (e.g., for reds).
+3. **Color Range Calculation:**
+   * The `get_limits()` function takes a BGR color (e.g., `[0, 255, 255]` for yellow) as input
+   * Converts this color to HSV and extracts the hue value
+   * Calculates appropriate lower and upper HSV limits based on the hue value
+   * Handles special cases for hues near the edges of the range (low or high values)
 
-4.  **Mask Creation (`main.py`):**
-    * A binary mask is created using `cv2.inRange()`, where pixels within the calculated lower and upper HSV limits are white (object), and others are black (background).
+4. **Mask Creation:**
+   * Creates a binary mask using `cv2.inRange()` with the calculated HSV limits
+   * Pixels within the specified color range are white, others are black
 
-5.  **Contour Detection and Bounding Box (`main.py`):**
-    * `cv2.findContours()` is used on the mask to find the outlines of the detected color regions.
-    * If contours are found, the largest contour by area is selected (assuming it's the primary object of interest).
-    * `cv2.boundingRect()` calculates the coordinates for a rectangle enclosing this largest contour.
-    * `cv2.rectangle()` draws this bounding box on the original frame.
+5. **Bounding Box Detection:**
+   * Converts the mask to a PIL Image
+   * Uses PIL's `getbbox()` method to find the coordinates of the detected object
+   * Draws a green rectangle around the object if detected
 
-6.  **Display (`main.py`):**
-    * The processed frame (with the bounding box) is displayed using `cv2.imshow()`.
+6. **Display and Exit:**
+   * Displays the processed frame with the bounding box
+   * Checks for 'q' key press to exit gracefully
+   * Releases resources when done
 
 ## Customization
 
-* **Target Color:** To change the detected color, modify the `YELLOW_BGR` variable in `main.py` to your desired BGR color values.
-    ```python
-    # In main.py
-    # Example: Detect a blue object (BGR values for a shade of blue)
-    # TARGET_COLOR_BGR = [255, 0, 0] # Blue
-    TARGET_COLOR_BGR = [0, 255, 255] # Current yellow
+* **Target Color:** To detect a different color, modify the `YELLOW_BGR` variable in `main.py`:
+  ```python
+  # Default is yellow [0, 255, 255]
+  # For blue, use:
+  # YELLOW_BGR = [255, 0, 0]
+  ```
 
-    # ...
-    lower_limit, upper_limit = get_limits(color=TARGET_COLOR_BGR)
-    ```
-* **HSV Thresholds:** The sensitivity of color detection can be fine-tuned by adjusting the `HUE_ADJUSTMENT_VALUE`, `SATURATION_MIN`, `VALUE_MIN`, etc., constants within `util.py`.
+* **Detection Sensitivity:** Adjust the constants in `util.py` to fine-tune detection:
+  ```python
+  # Increase for wider color range detection:
+  # HUE_ADJUSTMENT_VALUE = 15
+
+  # Adjust minimum saturation and value for different lighting conditions:
+  # SATURATION_MIN = 80
+  # VALUE_MIN = 80
+  ```
+
+* **Rectangle Appearance:** Modify the rectangle color and thickness in `main.py`:
+  ```python
+  # Change rectangle color (BGR format):
+  # RECTANGLE_COLOR_BGR = (0, 0, 255)  # Red
+
+  # Change rectangle thickness:
+  # RECTANGLE_THICKNESS = 3
+  ```
+
+## Troubleshooting
+
+* If the webcam doesn't open, check your camera connections and permissions
+* If color detection is inconsistent, try adjusting the HSV threshold values in `util.py`
+* For poor performance on slower systems, consider reducing the frame resolution in `main.py`
 
 ---
 
-Feel free to adapt this to your specific needs or if you expand the project!
+Feel free to contribute to this project by submitting issues or pull requests!
